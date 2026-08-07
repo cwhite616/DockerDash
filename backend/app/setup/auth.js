@@ -2,8 +2,10 @@ const jwt = require('jsonwebtoken');
 
 const jwtSecret = process.env.JWT_SECRET || 'dev-secret-change';
 const passwordEnv = process.env.PASSWORD || '';
+const authMode = (process.env.AUTH || 'password').toLowerCase();
 
 function requireAuth(req, res, next) {
+  if (authMode === 'none') return next();
   if (!passwordEnv) return res.status(500).json({ error: 'PASSWORD not set on server' });
   const auth = req.headers.authorization || '';
   const headerToken = auth.startsWith('Bearer ') ? auth.slice(7) : undefined;
@@ -19,6 +21,7 @@ function requireAuth(req, res, next) {
 }
 
 function authenticateFromHeadersOrUrl(req) {
+  if (authMode === 'none') return 'anonymous';
   const auth = req.headers['authorization'];
   if (auth && typeof auth === 'string' && auth.startsWith('Bearer ')) {
     const token = auth.slice(7);
@@ -42,6 +45,6 @@ function authenticateFromHeadersOrUrl(req) {
   return null;
 }
 
-module.exports = { jwtSecret, passwordEnv, requireAuth, authenticateFromHeadersOrUrl };
+module.exports = { jwtSecret, passwordEnv, authMode, requireAuth, authenticateFromHeadersOrUrl };
 
 
