@@ -15,5 +15,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - /var/lib/docker/containers:/host_docker_containers:ro
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      # Lets THEME=./some-file.css (in example.env/.env) resolve relative to
+      # this project root, the same directory .env lives in.
+      - .:/app/project:ro
     extra_hosts:
       - "host.docker.internal:host-gateway"

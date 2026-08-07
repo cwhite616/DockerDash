@@ -44,6 +44,33 @@ app.use('/api/containers', requireAuth, statsRouter);
 
 const publicDir = path.resolve(__dirname, 'public');
 if (!fs.existsSync(publicDir)) fs.mkdirSync(publicDir, { recursive: true });
+
+const themesDir = path.join(publicDir, 'themes');
+const defaultTheme = 'basic-dark';
+const builtinThemeName = /^[a-zA-Z0-9_-]+$/;
+// Custom THEME paths are resolved relative to the project root (where .env
+// lives), which docker-compose.yml bind-mounts read-only at /app/project.
+// Falls back to the backend's own cwd for non-Docker/local runs.
+const envRelativeRoot = fs.existsSync('/app/project') ? '/app/project' : process.cwd();
+
+app.get('/theme.css', (req, res) => {
+  const theme = process.env.THEME || defaultTheme;
+  const cssPath = builtinThemeName.test(theme)
+    ? path.join(themesDir, `${theme}.css`)
+    : path.resolve(envRelativeRoot, theme);
+  fs.readFile(cssPath, 'utf8', (err, css) => {
+    if (!err) {
+      res.type('text/css').send(css);
+      return;
+    }
+    console.warn(`THEME "${theme}" not found at ${cssPath}, falling back to ${defaultTheme}`);
+    fs.readFile(path.join(themesDir, `${defaultTheme}.css`), 'utf8', (fallbackErr, fallbackCss) => {
+      if (fallbackErr) { res.status(404).type('text/css').send(''); return; }
+      res.type('text/css').send(fallbackCss);
+    });
+  });
+});
+
 app.use(express.static(publicDir));
 app.get('*', (req, res, next) => { if (req.path.startsWith('/api')) return next(); res.sendFile(path.join(publicDir, 'index.html')); });
 

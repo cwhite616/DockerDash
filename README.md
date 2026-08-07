@@ -51,6 +51,11 @@ Open `http://localhost:8080`.
 - `PASSWORD`: dashboard login password
 - `JWT_SECRET`: auth signing secret
 - `PORT` (default `8080`)
+- `THEME` (default `basic-dark`): UI theme. Set to a built-in name (`basic-dark`,
+  `basic-light`, `nord`, `solarized`, `solarized-dark`, `ubuntu`, `cga`,
+  `terminal`) or a path to a custom CSS file, resolved relative to the
+  directory `.env` lives in (e.g. `THEME=./my-theme.css` for a file next to
+  `.env`). Restart the container after changing it.
 
 ## API / Streams
 
