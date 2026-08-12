@@ -102,13 +102,13 @@ export default function App() {
 
   if (!token) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0b0f14', color: '#e5e7eb' }}>
-        <div style={{ background: '#151a21', padding: 24, borderRadius: 12, width: 'min(92vw, 420px)' }}>
-          <h1 style={{ marginTop: 0, marginBottom: 16, fontSize: 22 }}>DockerDash</h1>
-          <label style={{ display: 'block', marginBottom: 8, color: '#9aa4b2' }}>Password</label>
-          <div style={{ display: 'grid', gap: 12 }}>
-            <input type="password" value={password} onChange={e => setPassword(e.target.value)} autoFocus placeholder="Enter password" style={{ padding: '12px 12px', borderRadius: 8, border: '1px solid #2a2f36', background: '#0f141a', color: '#e5e7eb' }} />
-            <button type="button" onClick={login} style={{ padding: '12px 12px', borderRadius: 8, border: 'none', background: '#2563eb', color: 'white', cursor: 'pointer' }}>Login</button>
+      <div className="login-page">
+        <div className="login-card">
+          <h1 className="login-title">DockerDash</h1>
+          <label className="login-label">Password</label>
+          <div className="login-form">
+            <input type="password" value={password} onChange={e => setPassword(e.target.value)} autoFocus placeholder="Enter password" className="login-input" />
+            <button type="button" onClick={login} className="btn btn-primary">Login</button>
           </div>
         </div>
       </div>
@@ -116,19 +116,19 @@ export default function App() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0b0f14', color: '#e5e7eb' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid #1f2530' }}>
-        <div style={{ fontWeight: 600 }}>DockerDash</div>
+    <div className="app-shell">
+      <header className="app-header">
+        <div className="app-title">DockerDash</div>
         <div>
           {authMode !== 'none' && (
-            <button onClick={logout} style={{ background: 'transparent', color: '#9aa4b2', border: '1px solid #2a2f36', padding: '6px 10px', borderRadius: 8, cursor: 'pointer' }}>Logout</button>
+            <button onClick={logout} className="btn btn-outline">Logout</button>
           )}
         </div>
       </header>
-      <main style={{ padding: 0 }}>
-        {error && <div style={{ background: '#241c1c', border: '1px solid #3b1e1e', color: '#fca5a5', borderRadius: 12, padding: 12, marginBottom: 16 }}>{error}</div>}
-        {loading && !error && <div style={{ color: '#9aa4b2', marginBottom: 16 }}>Loading containers…</div>}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(330px, 1fr))', gap: 16, padding: 16 }}>
+      <main className="app-main">
+        {error && <div className="error-banner">{error}</div>}
+        {loading && !error && <div className="loading-banner">Loading containers…</div>}
+        <div className="grid">
           <AllInline token={token} agg={agg} hist={aggHist} containers={containers}
             onBroadcast={(action)=> setBroadcast({ action, at: Date.now() })}
             onPhaseChange={(type, active) => setGlobalPhase(active ? type : '')}
@@ -137,7 +137,7 @@ export default function App() {
             <ContainerInline key={c.id} container={c} token={token} broadcast={broadcast} globalPhase={globalPhase} />
           ))}
           {containers.length === 0 && !error && (
-            <div style={{ color: '#9aa4b2' }}>No containers found.</div>
+            <div className="empty-state">No containers found.</div>
           )}
         </div>
       </main>
@@ -215,9 +215,9 @@ const ContainerInline = memo(function ContainerInline({ container, token, broadc
   const disableRebuild = lowerName.includes('dockerdash') || lowerImage.includes('dockerdash')
 
   return (
-    <div style={{ background: '#151a21', border: '1px solid #1f2530', borderRadius: 12, padding: 16, overflow: 'hidden' }}>
-      <div style={{ fontWeight: 600, marginBottom: 4 }}>{container.name}</div>
-      <div style={{ color: '#9aa4b2', fontSize: 12, marginBottom: 8 }}>
+    <div className="card">
+      <div className="card-title">{container.name}</div>
+      <div className="card-subtitle">
         {container.image}
         {(container.hostPorts && container.hostPorts.length>0) && (
           <>
@@ -225,18 +225,18 @@ const ContainerInline = memo(function ContainerInline({ container, token, broadc
           </>
         )}
       </div>
-      <div style={{ fontSize: 13, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8 }}>
-        <span style={{ color: container.state === 'running' ? '#22c55e' : '#f59e0b' }}>{container.state}</span>
-        {uptime && <span style={{ color: '#9aa4b2' }}>• {container.state==='running'?'up':'down'} {uptime}</span>}
+      <div className="card-status-row">
+        <span className={isRunning ? 'status status-running' : 'status status-other'}>{container.state}</span>
+        {uptime && <span className="card-meta">• {container.state==='running'?'up':'down'} {uptime}</span>}
       </div>
-      <div style={{ display: 'flex', gap: 8, marginBottom: 8, width: '100%', flexWrap: 'wrap' }}>
-        <button onClick={() => action('start')} disabled={busy!=='' || isRunning || globalDisableStart || phase==='restarting' || phase==='stopping'} style={{...actionBtnStyle, opacity: (busy!=='' || isRunning || globalDisableStart || phase==='restarting' || phase==='stopping')?0.6:1, cursor: (busy!=='' || isRunning || globalDisableStart || phase==='restarting' || phase==='stopping')?'not-allowed':'pointer'}}>Start</button>
-        <button onClick={() => action('restart')} disabled={busy!=='' || !isRunning || globalDisableRestart || phase==='starting' || phase==='stopping'} style={{...actionBtnStyle, opacity: (busy!=='' || !isRunning || globalDisableRestart || phase==='starting' || phase==='stopping')?0.6:1, cursor: (busy!=='' || !isRunning || globalDisableRestart || phase==='starting' || phase==='stopping')?'not-allowed':'pointer'}}>Restart</button>
-        <button onClick={() => action(killMode ? 'kill' : 'stop')} disabled={busy!=='' || (globalDisableStop) || (phase==='stopping') || (!isRunning && !killMode)} style={{...dangerBtnStyle, opacity: (busy!=='' || globalDisableStop || phase==='stopping' || (!isRunning && !killMode))?0.6:1, cursor: (busy!=='' || globalDisableStop || phase==='stopping' || (!isRunning && !killMode))?'not-allowed':'pointer'}}>{killMode ? 'Kill' : 'Stop'}</button>
+      <div className="actions-row">
+        <button onClick={() => action('start')} disabled={busy!=='' || isRunning || globalDisableStart || phase==='restarting' || phase==='stopping'} className="btn btn-primary">Start</button>
+        <button onClick={() => action('restart')} disabled={busy!=='' || !isRunning || globalDisableRestart || phase==='starting' || phase==='stopping'} className="btn btn-primary">Restart</button>
+        <button onClick={() => action(killMode ? 'kill' : 'stop')} disabled={busy!=='' || (globalDisableStop) || (phase==='stopping') || (!isRunning && !killMode)} className="btn btn-danger">{killMode ? 'Kill' : 'Stop'}</button>
         {/* Rebuild removed */}
-        {(busy || msg) && <span style={{ color: '#9aa4b2', fontSize: 12, alignSelf: 'center' }}>{busy? (busy==='start'?'Starting…':busy==='restart'?'Restarting…':busy==='stop'?'Stopping…':busy==='pull'?'Rebuilding…':'Working…') : msg}</span>}
+        {(busy || msg) && <span className="status-text">{busy? (busy==='start'?'Starting…':busy==='restart'?'Restarting…':busy==='stop'?'Stopping…':busy==='pull'?'Rebuilding…':'Working…') : msg}</span>}
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1.3fr', gap: 8, overflow: 'hidden' }}>
+      <div className="stats-grid">
         <StatSpark title="CPU" values={cpuSeries} format={(v)=>`${v.toFixed(1)}%`} />
         <StatSpark title="Memory Used" values={memSeries} format={(v)=>formatBytes(v)} />
         {(() => { return (
@@ -288,21 +288,21 @@ function AllInline({ token, agg, hist, containers, onBroadcast, onPhaseChange })
   const ioReadSeries = (hist && hist.r && hist.r.length) ? hist.r : [agg ? (agg.ioReadRate||0) : 0]
   const ioWriteSeries = (hist && hist.w && hist.w.length) ? hist.w : [agg ? (agg.ioWriteRate||0) : 0]
   return (
-    <div style={{ background: '#151a21', border: '1px solid #1f2530', borderRadius: 12, padding: 16 }}>
-      <div style={{ fontWeight: 600, marginBottom: 4 }}>All Dockers</div>
-      <div style={{ color: '#9aa4b2', fontSize: 12, marginBottom: 8 }}>docker:{agg && agg.engineVersion ? agg.engineVersion : 'unknown'}</div>
-      <div style={{ fontSize: 13, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8 }}>
-        <span style={{ color: '#22c55e' }}>system running</span>
-        {uptime && <span style={{ color: '#9aa4b2' }}>• {uptime}</span>}
+    <div className="card">
+      <div className="card-title">All Dockers</div>
+      <div className="card-subtitle">docker:{agg && agg.engineVersion ? agg.engineVersion : 'unknown'}</div>
+      <div className="card-status-row">
+        <span className="status status-running">system running</span>
+        {uptime && <span className="card-meta">• {uptime}</span>}
       </div>
-      <div style={{ display: 'flex', gap: 8, marginBottom: 8, width: '100%', flexWrap: 'wrap' }}>
-        <button onClick={() => actionAll('start')} disabled={busy!=='' || (containers.every(c => c.state==='running'))} style={{...actionBtnStyle, opacity: (busy!=='' || containers.every(c => c.state==='running'))?0.6:1, cursor: (busy!=='' || containers.every(c => c.state==='running'))?'not-allowed':'pointer'}}>Start</button>
-        <button onClick={() => actionAll('restart')} disabled={busy!==''} style={{...actionBtnStyle, opacity: busy!==''?0.6:1, cursor: busy!==''?'not-allowed':'pointer'}}>Restart</button>
-        <button onClick={() => actionAll('stop')} disabled={busy!=='' || (containers.every(c => c.state!=='running'))} style={{...dangerBtnStyle, opacity: (busy!=='' || containers.every(c => c.state!=='running'))?0.6:1, cursor: (busy!=='' || containers.every(c => c.state!=='running'))?'not-allowed':'pointer'}}>Stop</button>
-        {busy && <span style={{ color: '#9aa4b2', fontSize: 12, alignSelf: 'center' }}>{busy==='start'?'Starting…':busy==='restart'?'Restarting…':'Stopping…'}</span>}
-        {!busy && msg && <span style={{ color: '#9aa4b2', fontSize: 12, alignSelf: 'center' }}>{msg}</span>}
+      <div className="actions-row">
+        <button onClick={() => actionAll('start')} disabled={busy!=='' || (containers.every(c => c.state==='running'))} className="btn btn-primary">Start</button>
+        <button onClick={() => actionAll('restart')} disabled={busy!==''} className="btn btn-primary">Restart</button>
+        <button onClick={() => actionAll('stop')} disabled={busy!=='' || (containers.every(c => c.state!=='running'))} className="btn btn-danger">Stop</button>
+        {busy && <span className="status-text">{busy==='start'?'Starting…':busy==='restart'?'Restarting…':'Stopping…'}</span>}
+        {!busy && msg && <span className="status-text">{msg}</span>}
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1.3fr', gap: 8, overflow: 'hidden' }}>
+      <div className="stats-grid">
         <StatSpark title="CPU" values={cpuSeries} format={(v)=>`${v.toFixed(1)}%`} />
         <StatSpark title="Memory Used" values={memSeries} format={(v)=>formatBytes(v)} />
         {(() => { return (
@@ -334,19 +334,19 @@ function ContainerModal({ container, onClose }) {
   }
 
   const TabButton = ({ id, label }) => (
-    <button onClick={() => setTab(id)} style={{ width: '100%', textAlign: 'left', padding: '10px 12px', borderRadius: 8, border: '1px solid ' + (tab === id ? '#2b3340' : 'transparent'), background: tab === id ? '#202733' : 'transparent', color: '#e5e7eb', cursor: 'pointer' }}>{label}</button>
+    <button onClick={() => setTab(id)} className={tab === id ? 'tab-button tab-button-active' : 'tab-button'}>{label}</button>
   )
 
   return (
-    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
-      <div onClick={e => e.stopPropagation()} style={{ width: 'min(96vw, 1100px)', height: 'min(92vh, 720px)', background: '#0f141a', border: '1px solid #1f2530', borderRadius: 12, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: '1px solid #1f2530', background: '#0b0f14' }}>
-          <div style={{ fontWeight: 600 }}>{container.name}</div>
-          <button onClick={onClose} aria-label="Close" style={{ background: 'transparent', color: '#9aa4b2', border: '1px solid #2a2f36', padding: '6px 10px', borderRadius: 8, cursor: 'pointer' }}>✕</button>
+    <div onClick={onClose} className="modal-overlay">
+      <div onClick={e => e.stopPropagation()} className="modal">
+        <div className="modal-header">
+          <div className="modal-title">{container.name}</div>
+          <button onClick={onClose} aria-label="Close" className="btn btn-outline">✕</button>
         </div>
-        <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
-          <aside style={{ width: 220, borderRight: '1px solid #1f2530', padding: 12, background: '#0b0f14' }}>
-            <div style={{ display: 'grid', gap: 8 }}>
+        <div className="modal-body">
+          <aside className="modal-sidebar">
+            <div className="modal-sidebar-list">
               <TabButton id='terminal' label='Terminal' />
               <TabButton id='console' label='Console' />
               <TabButton id='files' label='File Manager' />
@@ -354,19 +354,19 @@ function ContainerModal({ container, onClose }) {
               <TabButton id='network' label='Networking' />
             </div>
           </aside>
-          <section style={{ flex: 1, padding: 12, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <section className="modal-content">
+            <div className="modal-content-body">
               {tab === 'terminal' && (<TerminalTab containerId={container.id} />)}
               {tab === 'console' && (<LogsTab containerId={container.id} />)}
               {tab === 'files' && (<FilesTab containerId={container.id} />)}
               {tab === 'stats' && (<StatsTab containerId={container.id} stats={stats} setStats={setStats} />)}
               {tab === 'network' && (<NetworkTab containerId={container.id} inspectData={inspectData} setInspectData={setInspectData} />)}
             </div>
-            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-start' }}>
-              <button style={actionBtnStyle} disabled={!!actionBusy} onClick={() => doAction(container.id, 'start')}>{actionBusy==='start'?'Starting…':'Start'}</button>
-              <button style={actionBtnStyle} disabled={!!actionBusy} onClick={() => doAction(container.id, 'restart')}>{actionBusy==='restart'?'Restarting…':'Restart'}</button>
-              <button style={dangerBtnStyle} disabled={!!actionBusy} onClick={() => doAction(container.id, 'stop')}>{actionBusy==='stop'?'Stopping…':'Stop'}</button>
-              <button style={secondaryBtnStyle} disabled={!!actionBusy} onClick={() => doAction(container.id, 'pull')}>{actionBusy==='pull'?'Rebuilding…':'Rebuild'}</button>
+            <div className="modal-actions">
+              <button className="btn btn-primary" disabled={!!actionBusy} onClick={() => doAction(container.id, 'start')}>{actionBusy==='start'?'Starting…':'Start'}</button>
+              <button className="btn btn-primary" disabled={!!actionBusy} onClick={() => doAction(container.id, 'restart')}>{actionBusy==='restart'?'Restarting…':'Restart'}</button>
+              <button className="btn btn-danger" disabled={!!actionBusy} onClick={() => doAction(container.id, 'stop')}>{actionBusy==='stop'?'Stopping…':'Stop'}</button>
+              <button className="btn btn-secondary" disabled={!!actionBusy} onClick={() => doAction(container.id, 'pull')}>{actionBusy==='pull'?'Rebuilding…':'Rebuild'}</button>
             </div>
           </section>
         </div>
@@ -375,26 +375,22 @@ function ContainerModal({ container, onClose }) {
   )
 }
 
-const actionBtnStyle = { background: '#2563eb', color: 'white', border: 'none', padding: '6px 8px', borderRadius: 6, cursor: 'pointer', fontSize: 12, flex: 1, minWidth: 0 }
-const secondaryBtnStyle = { background: '#1f2937', color: '#e5e7eb', border: '1px solid #2a2f36', padding: '6px 8px', borderRadius: 6, cursor: 'pointer', fontSize: 12, flex: 1, minWidth: 0 }
-const dangerBtnStyle = { background: '#b91c1c', color: 'white', border: 'none', padding: '6px 8px', borderRadius: 6, cursor: 'pointer', fontSize: 12, flex: 1, minWidth: 0 }
-
 function StatSpark({ title, values, format }) {
   const last = values.length ? values[values.length - 1] : 0
   // Simple inline sparkline using divs
   const max = Math.max(1, ...values)
   const points = values.slice(-40)
   return (
-    <div style={{ background: '#0b0f14', border: '1px solid #1f2530', borderRadius: 8, padding: 8, overflow: 'hidden' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-        <div style={{ color: '#9aa4b2', fontSize: 10 }}>{title}</div>
-        <div style={{ fontSize: 10 }}>{format(last || 0)}</div>
+    <div className="stat-card">
+      <div className="stat-header">
+        <div className="stat-title">{title}</div>
+        <div className="stat-value">{format(last || 0)}</div>
       </div>
-      <div style={{ position: 'relative', height: 36, overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, display: 'flex', gap: 2, alignItems: 'flex-end' }}>
+      <div className="sparkline">
+        <div className="sparkline-bars">
           {points.map((v, i) => {
             const h = Math.max(1, Math.round((v / max) * 36))
-            return <div key={i} style={{ width: 3, height: h, background: '#2563eb', borderRadius: 2 }} />
+            return <div key={i} className="sparkline-bar" style={{ height: h }} />
           })}
         </div>
       </div>
