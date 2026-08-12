@@ -7,7 +7,7 @@ const path = require('path');
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
 
-const { requireAuth, authenticateFromHeadersOrUrl, jwtSecret, passwordEnv } = require('./setup/auth');
+const { requireAuth, authenticateFromHeadersOrUrl, jwtSecret, passwordEnv, authMode } = require('./setup/auth');
 const { router: containersRouter } = require('./routes/containers');
 const { router: statsRouter } = require('./routes/stats');
 const containersStore = require('./services/containersStore');
@@ -23,10 +23,16 @@ app.use(express.json({ limit: '5mb' }));
 app.use(morgan('dev'));
 app.use(compression());
 
+app.get('/api/auth-mode', (req, res) => {
+  res.json({ mode: authMode });
+});
+
 app.post('/api/login', (req, res) => {
   const { password } = req.body ?? {};
-  if (!passwordEnv) return res.status(500).json({ error: 'PASSWORD not set on server' });
-  if (password !== passwordEnv) return res.status(401).json({ error: 'Invalid password' });
+  if (authMode !== 'none') {
+    if (!passwordEnv) return res.status(500).json({ error: 'PASSWORD not set on server' });
+    if (password !== passwordEnv) return res.status(401).json({ error: 'Invalid password' });
+  }
   const token = jwt.sign({ role: 'admin' }, jwtSecret, { expiresIn: '30d' });
   const cookie = `auth=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${60*60*24*30}`;
   res.setHeader('Set-Cookie', cookie);

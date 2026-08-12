@@ -4,6 +4,7 @@ import { connectContainerStats, disconnectContainerStats, reconcileContainerStat
 export default function App() {
   const [token, setToken] = useState(() => localStorage.getItem('token') || '')
   const [password, setPassword] = useState('')
+  const [authMode, setAuthMode] = useState(null) // null while loading, then 'password' | 'none'
   const [loading, setLoading] = useState(false)
   const [containers, setContainers] = useState([])
   const [agg, setAgg] = useState(null)
@@ -14,6 +15,13 @@ export default function App() {
   const [error, setError] = useState('')
 
   useEffect(() => { if (token) localStorage.setItem('token', token) }, [token])
+
+  useEffect(() => {
+    fetch('/api/auth-mode').then(r => r.json()).then(d => {
+      setAuthMode(d.mode)
+      if (d.mode === 'none' && !token) setToken('no-auth')
+    }).catch(() => setAuthMode('password'))
+  }, [])
 
   const sortedContainers = useMemo(() => (
     [...containers].sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' }))
@@ -88,6 +96,10 @@ export default function App() {
     reconcileContainerStats(containers.map((container) => container.id))
   }, [containers])
 
+  if (authMode === null) {
+    return null
+  }
+
   if (!token) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0b0f14', color: '#e5e7eb' }}>
@@ -108,7 +120,9 @@ export default function App() {
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid #1f2530' }}>
         <div style={{ fontWeight: 600 }}>DockerDash</div>
         <div>
-          <button onClick={logout} style={{ background: 'transparent', color: '#9aa4b2', border: '1px solid #2a2f36', padding: '6px 10px', borderRadius: 8, cursor: 'pointer' }}>Logout</button>
+          {authMode !== 'none' && (
+            <button onClick={logout} style={{ background: 'transparent', color: '#9aa4b2', border: '1px solid #2a2f36', padding: '6px 10px', borderRadius: 8, cursor: 'pointer' }}>Logout</button>
+          )}
         </div>
       </header>
       <main style={{ padding: 0 }}>
